@@ -9,13 +9,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import web.service.UserService;
+import web.service.UserServiceImpl;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final SuccessUserHandler successUserHandler;
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @Autowired
     public WebSecurityConfig(SuccessUserHandler successUserHandler) {
@@ -23,7 +23,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Autowired
-    public void setUserService(UserService userService) {
+    public void setUserService(UserServiceImpl userService) {
         this.userService = userService;
     }
 
@@ -35,9 +35,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/user").hasAnyRole("USER", "ADMIN")
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .and()
-                .formLogin().successHandler(successUserHandler)
-                .permitAll()
-                .and()
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .successHandler(successUserHandler)
+                        .permitAll()
+                )
                 .logout()
                 .permitAll();
     }

@@ -22,9 +22,19 @@ public class UsersController {
         this.userService = userService;
     }
 
+    @GetMapping("/login")
+    public String login() {
+        return "login";
+    }
+
     @GetMapping("/admin")
-    public String showAllUsers(ModelMap model) {
+    public String showAllUsers(ModelMap model, Principal principal) {
         model.addAttribute("allUsers", userService.getAllUsers());
+
+        User user = userService.findByUsername(principal.getName());
+        model.addAttribute("userInfo", user);
+        model.addAttribute("currentUser", user);
+        model.addAttribute("roles", userService.getAllRoles());
         return "users";
     }
 
@@ -47,31 +57,13 @@ public class UsersController {
         return "user";
     }
 
-    @GetMapping("/admin/addNewUser")
-    public String addNewUserForm(ModelMap model) {
-
-        model.addAttribute("currentUser", new User());
-
-        return "user-info";
-    }
-
-    @GetMapping("/admin/editUser")
-    public String editUserForm(@RequestParam("id") Long id, ModelMap model) {
-
-        User user = userService.findUserById(id);
-
-        model.addAttribute("currentUser", user);
-
-        return "user-info";
-    }
-
     @PostMapping("/admin")
     public String saveUser(@ModelAttribute("currentUser") User user) {
         userService.saveUser(user);
         return "redirect:/admin";
     }
 
-    @GetMapping("/admin/deleteUser")
+    @PostMapping("/admin/deleteUser")
     public String deleteUser(@RequestParam Long id) {
         userService.deleteUser(id);
         return "redirect:/admin";
