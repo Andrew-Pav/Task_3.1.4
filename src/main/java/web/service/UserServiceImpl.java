@@ -14,8 +14,7 @@ import web.models.User;
 import web.repository.RoleRepository;
 import web.repository.UserRepository;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,7 +35,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     public User findByUsername(String username) {
-        return userRepository.findByFirstName(username);
+        return userRepository.findByUsername(username);
     }
 
     @Transactional
@@ -70,5 +69,33 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     public List<Role> getAllRoles() {
         return roleRepository.findAll();
+    }
+
+    private void setRolesToUser(User user, List<String> roles) {
+        Set<Role> rolesForUser = new HashSet<>();
+        for (String role : roles) {
+            Optional<Role> roleOpt = roleRepository.getRolesByName(role);
+            Role roleForUser = roleOpt.orElseGet(() -> new Role(role));
+            rolesForUser.add(roleForUser);
+        }
+        user.setRoles(rolesForUser);
+    }
+
+    @Transactional
+    public void updateUserStep1(long id, String name, String surname, int age,
+                              String username, String password, List<String> roles) {
+        User user = findUserById(id);
+        user.setName(name);
+        user.setSurname(surname);
+        user.setAge(age);
+        user.setUsername(username);
+        user.setPassword(password);
+        updateUserStep2(user, roles);
+    }
+
+    @Transactional
+    public void updateUserStep2(User user, List<String> roles) {
+        setRolesToUser(user, roles);
+        userRepository.save(user);
     }
 }
