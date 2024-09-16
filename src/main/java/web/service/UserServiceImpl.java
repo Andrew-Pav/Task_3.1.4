@@ -7,6 +7,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.models.Role;
@@ -22,6 +24,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     private UserRepository userRepository;
     private RoleRepository roleRepository;
+
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
     public void setUserRepository(UserRepository userRepository, RoleRepository roleRepository) {
@@ -96,6 +100,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Transactional
     public void updateUserStep2(User user, List<String> roles) {
         setRolesToUser(user, roles);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
     }
 }
